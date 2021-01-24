@@ -1,7 +1,11 @@
-
-from typing import ContextManager
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, CreateView, UpdateView,  DetailView
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import (TemplateView, 
+                                  CreateView, 
+                                  UpdateView, 
+                                  DetailView, 
+                                  DeleteView)
 from prac.models import Car
 
 class HomeTemplateView(TemplateView):
@@ -14,7 +18,6 @@ class HomeTemplateView(TemplateView):
         context["car"] = Car.objects.all()
         return context
     
-
 class IndividualView(TemplateView):
     model = Car
     template_name = 'prac/individual.html'
@@ -35,15 +38,42 @@ class CarCreateView(CreateView):
         return super(CarCreateView, self).form_valid(form)
     
 class CarDetailView(DetailView):
+    model = Car
+    template_name = 'prac/detail.html'
     
-class CarUpdateView(UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+class CarUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Car
     template_name = 'prac/update.html'
     fields = ['name', 'brand', 'model', 'year']
     success_url = '/'
     
-    def get_object(self, queryset=None):
-        return self.request.user
     
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user == post.owner:
+            return True
+        return False
+    
+
+class CarDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Car
+    template_name = "prac/delete.html"
+    
+    def get_object(self):
+        pk_ = self.kwargs.get("pk")
+        return get_object_or_404(Car, pk=pk_)
+    
+    def get_success_url(self):
+        return reverse("prac:home")
+    
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user == post.owner:
+            return True
+        else:
+            return False
             
     
