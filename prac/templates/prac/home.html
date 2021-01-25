@@ -1,6 +1,6 @@
 {% for item in car%}
-<a href="{% url 'prac:detail' item.pk %}"><h1>{{item.owner}}</h1></a>
-<h1>{{item.name}}</h1>
+<a href="{% url 'prac:other' item.pk %}"><h1>{{item.owner}}</h1></a>
+<a href="{% url 'prac:detail' item.pk %}"><h1></h1>{{item.name}}</h1></a>
 <h1>{{item.brand}}</h1>
 <h1>{{item.model}}</h1>
 <h1>{{item.year}}</h1>
